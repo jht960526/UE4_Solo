@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "EngineMinimal.h"
+#include "UE4_SoloPro.h"
+#include "GameFramework/RotatingMovementComponent.h"
 #include "GameFramework/Actor.h"
 #include "Fountain.generated.h"
 
@@ -18,10 +19,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	//virtual void PostInitializeComponents() override;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(VisibleAnywhere)
+	URotatingMovementComponent* Movement;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent *Body;
@@ -35,4 +41,12 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UParticleSystemComponent* Splash; // ÆÄÆ¼Å¬
 
+	UPROPERTY(EditAnywhere)
+	int32 ID;
+
+private:
+	UPROPERTY(EditAnywhere, Category = Stat, Meta = (AllowPrivateAccess = ture))
+	float RotateSpeed;
+
 };
+
