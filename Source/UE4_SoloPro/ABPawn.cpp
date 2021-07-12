@@ -28,7 +28,7 @@ AABPawn::AABPawn()
 
 	Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	
-	static ConstructorHelpers::FClassFinder<UAnimInstance>WARRIOR_ANIM(TEXT("/Game/Animation/WorriorAnimBlueprint.WorriorAnimBlueprint_C"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance>WARRIOR_ANIM(TEXT("/Game/Animation/WorriorAnimBlueprint.WorriorAnimBlueprint"));
 	if(WARRIOR_ANIM.Succeeded())
 	{
 		Mesh->SetAnimInstanceClass(WARRIOR_ANIM.Class);
