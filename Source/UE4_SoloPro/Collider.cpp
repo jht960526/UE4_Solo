@@ -5,6 +5,10 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Components/InputComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
+#include "ColliderMovementComponent.h"
 
 // Sets default values
 ACollider::ACollider()
@@ -12,11 +16,10 @@ ACollider::ACollider()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	// 씬 컴포넌트 트랜스폼도 가지면서
-
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
-	SphereComponent->SetupAttachment(GetRootComponent());
+	// 움직이려고 하는 주체가 스피어 컴포넌트니까 루트로 바꿔준다.
+	SetRootComponent(SphereComponent);
+
 	SphereComponent->InitSphereRadius(40.0f);
 	SphereComponent->SetCollisionProfileName(TEXT("Pawn"));
 
@@ -30,6 +33,21 @@ ACollider::ACollider()
 		MeshComponent->SetRelativeLocation(FVector(0.f,0.f,-40.f));
 		MeshComponent->SetWorldScale3D(FVector(0.8f,0.8f,0.8f));
 	}
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(GetRootComponent());
+	SpringArm->SetRelativeRotation(FRotator(-45.f,0.f,0.f));
+	SpringArm->TargetArmLength = 400.f; //타겟과의 거리
+	SpringArm->bEnableCameraLag = true; // 카메라에 부드럽고 자연스러운 모션
+	SpringArm->CameraLagSpeed = 3.0f;
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(SpringArm,USpringArmComponent::SocketName);
+
+	OurMovementComponent = CreateDefaultSubobject<UColliderMovementComponent>(TEXT("OurMovementComponent"));
+	OurMovementComponent->UpdatedComponent = RootComponent;
+
+	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 // Called when the game starts or when spawned
@@ -51,5 +69,34 @@ void ACollider::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	PlayerInputComponent->BindAxis(TEXT("MoveForward"),this,&ACollider::MoveForward);
+	PlayerInputComponent->BindAxis(TEXT("MoveRight"),this,&ACollider::MoveRight);
+
 }
+
+UPawnMovementComponent* ACollider::GetMovementComponent() const
+{
+	return nullptr;
+}
+
+void ACollider::MoveForward(float input)
+{
+	FVector Forward = GetActorForwardVector();
+	
+	if (OurMovementComponent)
+	{
+		OurMovementComponent->AddInputVector(Forward * input); // AddMovement를 직접 만들어보기
+	}
+}
+
+void ACollider::MoveRight(float input)
+{
+	FVector Right = GetActorRightVector();
+
+	if (OurMovementComponent)
+	{
+		OurMovementComponent->AddInputVector(Right * input); // AddMovement를 직접 만들어보기
+	}
+}
+
 
