@@ -23,6 +23,10 @@ AMain::AMain()
 	// Attach the camera to the end of the boom and let the boom adjust to match
 	// the controller orientation
 	FollowCamera->bUsePawnControlRotation = false;
+
+	// Set our turn rates for input
+	BaseTurnRate = 65.f;
+	BaseLookUpRate = 65.f;
 }
 
 // Called when the game starts or when spawned
@@ -44,5 +48,34 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AMain::MoveForward(float Value)
+{
+	if((Controller != nullptr) && (Value != 0.0f))
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0.f,Rotation.Yaw,0.f);
+
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		// FRotationMatrix : 캐릭터의 중심이 0,0,0인 상태에서 각 축에 따라 얼마나 회전되어 있는지를 나타냄
+		// 회전에 따라 변경되는 축들
+		// Get UnitAxis: 회전방향에 대한 절대 축 얻기
+		AddMovementInput(Direction,Value);
+	}
+}
+
+void AMain::MoveRight(float Value)
+{
+	if((Controller != nullptr) && (Value != 0.0f))
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0.f,Rotation.Yaw,0.f);
+
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		AddMovementInput(Direction,Value);
+	}
 }
 
