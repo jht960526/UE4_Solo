@@ -57,4 +57,6 @@ private:
 
 	void MoveForward(float input);
 	void MoveRight(float input);
+
+	FVector2D CameraInput;
 };

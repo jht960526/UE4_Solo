@@ -47,6 +47,8 @@ ACollider::ACollider()
 	OurMovementComponent = CreateDefaultSubobject<UColliderMovementComponent>(TEXT("OurMovementComponent"));
 	OurMovementComponent->UpdatedComponent = RootComponent;
 
+	CameraInput = FVector2D(0.f,0.f);
+
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
