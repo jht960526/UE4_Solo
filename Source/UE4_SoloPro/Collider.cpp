@@ -49,7 +49,7 @@ ACollider::ACollider()
 
 	CameraInput = FVector2D(0.f,0.f); // 카메라 회전할때 사용하려고
 
-	AutoPossessPlayer = EAutoReceiveInput::Player0;
+	//AutoPossessPlayer = EAutoReceiveInput::Player0;
 }
 
 // Called when the game starts or when spawned
