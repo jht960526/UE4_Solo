@@ -19,6 +19,27 @@ public:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Item | Collision")
 	class USphereComponent* CollisionVolume;
 
+	/* Base Mesh Component */
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite, Category = "Item | Mesh")
+	class UStaticMeshComponent* Mesh;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Item | Particles")
+	class UParticleSystemComponent* IdleParticlesComponent;
+	// 액터에 파티클 기능 추가
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Item | Particles")
+	class UParticleSystem* OverlapParticles;
+	// 오버랩되었을때 파티클
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Item | Sounds")
+	class USoundCue* OverlapSound;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Item | ItemProperties")
+	bool bRotate;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = "Item | ItemProperties")
+	float RotationRate;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
