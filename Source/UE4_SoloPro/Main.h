@@ -30,6 +30,30 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = Camera)
 	float BaseLookUpRate;
 
+	/**
+	/*
+	/* Player Stats
+	/*
+	*/
+
+	//UPROPERTY(EditDefaultsOnly, VisibleAnywhere, Category = "Player Stats")
+	// 디폴트창에서만 수정가능하다고 했으면서 어디서든 볼수 있다고 체크해서 문제가 생김
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
+	float MaxHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Health;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Stats")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
+	float Stamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player Stats")
+	int32 Coins; // int가 어떤 플랫폼에서든 오류 없게 사용하기 위해서
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
