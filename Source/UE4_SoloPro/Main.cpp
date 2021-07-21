@@ -54,6 +54,29 @@ AMain::AMain()
 	Coins = 0;
 }
 
+void AMain::DecrementHealth(float Amount)
+{
+	if(Health - Amount <= 0.f)
+	{
+		Health -= Amount; // healthbar update
+		Die();
+	}
+	else
+	{
+		Health -= Amount;
+	}
+}
+
+void AMain::IncrementCoins(int32 Amount)
+{
+	Coins += Amount;
+}
+
+void AMain::Die()
+{
+
+}
+
 // Called when the game starts or when spawned
 void AMain::BeginPlay()
 {

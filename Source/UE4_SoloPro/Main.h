@@ -54,6 +54,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 	int32 Coins; // int가 어떤 플랫폼에서든 오류 없게 사용하기 위해서
 
+	void DecrementHealth(float Amount);
+
+	void IncrementCoins(int32 Amount);
+
+	void Die();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
