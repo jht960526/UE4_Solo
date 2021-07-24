@@ -3,6 +3,7 @@
 
 #include "MainAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Main.h"
 
 void UMainAnimInstance::NativeInitializeAnimation()
 {
@@ -10,6 +11,10 @@ void UMainAnimInstance::NativeInitializeAnimation()
 	{
 		Pawn = TryGetPawnOwner();
 		// 자기(애니메이션)의 주인(폰)에게서 데이터를 받아와서 동기화
+		if(Pawn)
+		{
+			Main = Cast<AMain>(Pawn);
+		}
 	}
 }
 
@@ -27,5 +32,10 @@ void UMainAnimInstance::UpdateAnimationProperties()
 		MovementSpeed = LateralSpeed.Size();
 
 		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
+
+		if(Main == nullptr)
+		{
+			Main = Cast<AMain>(Pawn);
+		}
 	}
 }
