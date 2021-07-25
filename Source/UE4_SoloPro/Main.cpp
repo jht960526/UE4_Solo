@@ -49,7 +49,7 @@ AMain::AMain()
 
 	MaxHealth = 100.f;
 	Health = 65.f;
-	MaxStamina = 350.f;
+	MaxStamina = 150.f;
 	Stamina = 120.f;
 	Coins = 0;
 
@@ -57,6 +57,13 @@ AMain::AMain()
 	SprintingSpeed = 950.f;
 
 	bShiftKeyDown = false;
+
+	//Initialize Enums
+	MovementStatus = EMovementStatus::EMS_Normal;
+	StaminaStatus = EStaminaStatus::ESS_Normal;
+
+	StaminaDrainRate = 25.f; // 초당 줄어드는 스테미나 비율
+	MinSprintStamina = 50.f; // 색이 바뀌는 구간
 }
 
 void AMain::SetMovementStatus(EMovementStatus Status)
@@ -117,6 +124,102 @@ void AMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	float DeltaStamina = StaminaDrainRate * DeltaTime;
+
+	// Tick이 돌아갈때 스테미나도 줄어들어야하니까
+	switch (StaminaStatus)
+	{
+	case EStaminaStatus::ESS_Normal:
+
+		if(bShiftKeyDown)
+		{
+			if(Stamina - DeltaStamina <= MinSprintStamina)
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_BelowMinimum);
+				Stamina -= DeltaStamina; // 줄어든 값을 적용하기 위함
+			}
+			else
+			{
+				Stamina -= DeltaStamina; // 줄어든 값을 적용하기 위함
+			}
+			SetMovementStatus(EMovementStatus::EMS_Sprinting); // 키가 눌렸으니까 달리기 상태
+		}
+		else // Shift key up
+		{
+			if(Stamina + DeltaStamina >= MaxStamina)
+			{
+				Stamina = MaxStamina;
+			}
+			else
+			{
+				Stamina += DeltaStamina;
+			}
+			SetMovementStatus(EMovementStatus::EMS_Normal);
+		}
+
+		break;
+
+	case EStaminaStatus::ESS_BelowMinimum: // 노랑색 되었을때
+		if(bShiftKeyDown)
+		{
+			if(Stamina - DeltaStamina <= 0.f)  // 스테미나가 0보다 작거나 같을 때
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_Exhausted);
+				Stamina = 0;
+				SetMovementStatus(EMovementStatus::EMS_Normal);
+			}
+			else // 그게 아닐때는 계속 달리기
+			{
+				Stamina -= DeltaStamina;
+				SetMovementStatus(EMovementStatus::EMS_Sprinting);
+			}
+		}
+
+		else // Shift key up
+		{
+			if(Stamina + DeltaStamina >= MinSprintStamina)
+			{
+				SetStaminaStatus(EStaminaStatus::ESS_Normal);
+				Stamina += DeltaStamina;
+			}
+			else
+			{
+				Stamina += DeltaStamina;
+			}
+			SetMovementStatus(EMovementStatus::EMS_Normal);
+		}
+		break;
+
+	case EStaminaStatus::ESS_Exhausted:
+		if(bShiftKeyDown)
+		{
+			Stamina = 0.f;
+		}
+		else // Shift key up
+		{
+			SetStaminaStatus(EStaminaStatus::ESS_ExhaustedRecovering);
+			Stamina += DeltaStamina;
+		}
+		SetMovementStatus(EMovementStatus::EMS_Normal); // 지친 상태니까 일반상태로
+		break;
+
+	case EStaminaStatus::ESS_ExhaustedRecovering:
+		if(Stamina + DeltaStamina >= MinSprintStamina)
+		{
+			SetStaminaStatus(EStaminaStatus::ESS_Normal);
+			Stamina += DeltaStamina;
+		}
+		else
+		{
+			Stamina += DeltaStamina;
+		}
+		SetMovementStatus(EMovementStatus::EMS_Normal); // 회복단계라 일반상태
+		break;
+
+	default:
+		break;
+
+	}
 }
 
 // Called to bind functionality to input
