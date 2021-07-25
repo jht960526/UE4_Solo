@@ -21,6 +21,8 @@ void AExplosive::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor
 		if(Main)
 		{
 			Main->DecrementHealth(Damage);
+
+			Destroy(); // 무기가 사라지면 안되니까 따로 만들어주기
 		}
 	}
 }

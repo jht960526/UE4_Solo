@@ -61,7 +61,6 @@ void AItem::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),OverlapParticles,GetActorLocation(),FRotator(0.f),true);
 		// 지정된 위치에서 파티클 재생,회전,발사    // 월드, 파티클시스템, 트렌스폼(로케이션), (회전)로테이션, 자동파괴 불
 	}
-	Destroy();
 
 	if(OverlapSound)
 	{
