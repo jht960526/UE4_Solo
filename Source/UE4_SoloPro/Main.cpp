@@ -8,6 +8,8 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapon.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AMain::AMain()
@@ -305,6 +307,10 @@ void AMain::LMBDown()
 			SetActiveOverlappingItem(nullptr); // 무기 장착하면 오버렙 가능한 무기null
 		}
 	}
+	else if(EquippedWeapon)
+	{
+		Attack();
+	}
 }
 
 void AMain::LMBUp()
@@ -320,5 +326,18 @@ void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
 	}
 
 	EquippedWeapon = WeaponToSet;
+}
+
+void AMain::Attack()
+{
+	bAttacking = true;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
+	if(AnimInstance && CombatMontage)
+	{
+		AnimInstance->Montage_Play(CombatMontage,1.35f); // 애니메이션 몽타주 플레이(어떤거,속도)
+		AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage); //어떤 애님으로 넘어갈건지
+
+	}
 }
 
