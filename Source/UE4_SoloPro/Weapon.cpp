@@ -5,11 +5,16 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Main.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Sound/SoundCue.h"
+#include "Kismet/GameplayStatics.h"
+#include "particles/ParticleSystemComponent.h"
 
 AWeapon::AWeapon()
 {
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
 	SkeletalMesh->SetupAttachment(GetRootComponent());
+
+	bWeaponParticles = false;
 }
 
 void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -21,13 +26,23 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 		AMain* Main = Cast<AMain>(OtherActor);
 		if(Main)
 		{
-			Equip(Main);
+			Main->SetActiveOverlappingItem(this);
 		}
 	}
 }
 
 void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	Super::OnOverlapEnd(OverlappedComponent,OtherActor,OtherComp,OtherBodyIndex);
+
+	if(OtherActor) // 액터와 오버랩 되었을때
+	{
+		AMain* Main = Cast<AMain>(OtherActor);
+		if(Main)
+		{
+			Main->SetActiveOverlappingItem(nullptr);
+		}
+	}
 }
 
 void AWeapon::Equip(AMain* Char)
@@ -45,6 +60,12 @@ void AWeapon::Equip(AMain* Char)
 		{
 			RightHandSocket->AttachActor(this, Char->GetMesh()); //캐릭터에 이것을 붙임
 			bRotate = false;
+			Char->SetEquippedWeapon(this); // 무기 붙이기
+		}
+		if(OnEquipSound) UGameplayStatics::PlaySound2D(this, OnEquipSound); //장착 사운드에 값이 있으면 소리on
+		if(!bWeaponParticles)
+		{
+			IdleParticlesComponent->Deactivate();
 		}
 	}
 }

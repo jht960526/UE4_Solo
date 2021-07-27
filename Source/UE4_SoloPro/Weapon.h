@@ -18,6 +18,12 @@ public:
 
 	AWeapon();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particle")
+	bool bWeaponParticles; //파티클 보기 체크
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Sound")
+	class USoundCue* OnEquipSound;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SkeletalMesh")
 	class USkeletalMeshComponent* SkeletalMesh;
 
