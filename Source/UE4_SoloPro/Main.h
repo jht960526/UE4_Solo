@@ -151,7 +151,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Items)
 	class AItem* ActiveOverlappingItem; // 장착가능한 무기표시 보기 위해서
 
-	FORCEINLINE void SetEquippedWeapon(AWeapon* WeaponToSet) {EquippedWeapon = WeaponToSet;}
+	void SetEquippedWeapon(AWeapon* WeaponToSet);
+	FORCEINLINE AWeapon* GetEquippedWeapon() {return EquippedWeapon;}
 	FORCEINLINE void SetActiveOverlappingItem(AItem* Item) {ActiveOverlappingItem = Item;}
 
 };

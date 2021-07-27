@@ -15,13 +15,15 @@ AWeapon::AWeapon()
 	SkeletalMesh->SetupAttachment(GetRootComponent());
 
 	bWeaponParticles = false;
+
+	WeaponState = EWeaponState::EMS_Pickup;
 }
 
 void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	Super::OnOverlapBegin(OverlappedComponent,OtherActor,OtherComp,OtherBodyIndex,bFromSweep,SweepResult);
 
-	if(OtherActor) // 액터와 오버랩 되었을때
+	if((WeaponState == EWeaponState::EMS_Pickup) && OtherActor) // 픽업상태의 액터와 오버랩 되었을때
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		if(Main)
@@ -60,7 +62,10 @@ void AWeapon::Equip(AMain* Char)
 		{
 			RightHandSocket->AttachActor(this, Char->GetMesh()); //캐릭터에 이것을 붙임
 			bRotate = false;
+
+			//Char->GetEquippedWeapon()->Destroy(this); // 새로운 무기를 장착하기 전에 이전 무기 파괴
 			Char->SetEquippedWeapon(this); // 무기 붙이기
+			Char->SetActiveOverlappingItem(nullptr); // 무기 장착했으니까 오버랩된 무기 없애기
 		}
 		if(OnEquipSound) UGameplayStatics::PlaySound2D(this, OnEquipSound); //장착 사운드에 값이 있으면 소리on
 		if(!bWeaponParticles)

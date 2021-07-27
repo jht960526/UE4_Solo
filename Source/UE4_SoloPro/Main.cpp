@@ -312,3 +312,13 @@ void AMain::LMBUp()
 	bLMBDown = false;
 }
 
+void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
+{
+	if(EquippedWeapon)  // 새로운 무기가 장착되면 이전 무기 파괴시킴
+	{
+		EquippedWeapon->Destroy();
+	}
+
+	EquippedWeapon = WeaponToSet;
+}
+

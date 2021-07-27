@@ -6,6 +6,15 @@
 #include "Item.h"
 #include "Weapon.generated.h"
 
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	EMS_Pickup    UMETA(DisplayName = "Pickup"),
+	EMS_Equipped  UMETA(DisplayName = "Equipped"),
+
+	EMS_MAX    UMETA(DisplayName = "DefaultMax")
+};
+
 /**
  * 
  */
@@ -17,6 +26,9 @@ class UE4_SOLOPRO_API AWeapon : public AItem
 public:
 
 	AWeapon();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Item")
+	EWeaponState WeaponState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Particle")
 	bool bWeaponParticles; //파티클 보기 체크
@@ -32,4 +44,7 @@ public:
 	virtual void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) override;
 	
 	void Equip(class AMain* Char);
+
+	FORCEINLINE void SetWeaponState(EWeaponState State ) { WeaponState = State; }
+	FORCEINLINE EWeaponState GetWeaponState() { return WeaponState; }
 };
