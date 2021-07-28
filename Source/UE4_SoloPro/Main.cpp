@@ -257,7 +257,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMain::MoveForward(float Value)
 {
-	if((Controller != nullptr) && (Value != 0.0f))
+	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -273,7 +273,7 @@ void AMain::MoveForward(float Value)
 
 void AMain::MoveRight(float Value)
 {
-	if((Controller != nullptr) && (Value != 0.0f))
+	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -330,14 +330,27 @@ void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
 
 void AMain::Attack()
 {
-	bAttacking = true;
-
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
-	if(AnimInstance && CombatMontage)
+	if(!bAttacking)
 	{
-		AnimInstance->Montage_Play(CombatMontage,1.35f); // 애니메이션 몽타주 플레이(어떤거,속도)
-		AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage); //어떤 애님으로 넘어갈건지
+		bAttacking = true;
 
+	    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
+	    if(AnimInstance && CombatMontage)
+	    {
+		   AnimInstance->Montage_Play(CombatMontage,1.35f); // 애니메이션 몽타주 플레이(어떤거,속도)
+		   AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage); //어떤 애님으로 넘어갈건지
+
+	    }
+	}
+	
+}
+
+void AMain::AttackEnd() // 에디터에서 사용가능
+{
+	bAttacking = false; // 순서를 바꿔야 하지 않을까?라는 의문
+	if(bLMBDown)
+	{
+		Attack();
 	}
 }
 

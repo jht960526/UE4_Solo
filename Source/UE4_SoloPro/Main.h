@@ -160,6 +160,9 @@ public:
 
 	void Attack();
 
+	UFUNCTION(BlueprintCallable)
+	void AttackEnd();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
 	class UAnimMontage* CombatMontage; // 애니메이션 블루프린트 사용하려고
 
