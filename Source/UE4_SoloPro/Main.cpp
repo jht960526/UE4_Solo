@@ -337,8 +337,23 @@ void AMain::Attack()
 	    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
 	    if(AnimInstance && CombatMontage)
 	    {
-		   AnimInstance->Montage_Play(CombatMontage,1.35f); // 애니메이션 몽타주 플레이(어떤거,속도)
-		   AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage); //어떤 애님으로 넘어갈건지
+			int32 Section = FMath::RandRange(0,1); // rand
+			switch (Section)
+			{
+			case 0:
+				AnimInstance->Montage_Play(CombatMontage,2.2f); // 애니메이션 몽타주 플레이(어떤거,속도)
+		        AnimInstance->Montage_JumpToSection(FName("Attack_1"), CombatMontage); //어떤 애님으로 넘어갈건지
+				break;
+
+			case 1:
+				AnimInstance->Montage_Play(CombatMontage,1.8f); // 애니메이션 몽타주 플레이(어떤거,속도)
+		        AnimInstance->Montage_JumpToSection(FName("Attack_2"), CombatMontage); //어떤 애님으로 넘어갈건지
+				break;
+
+			default:
+				;
+			}
+		   
 
 	    }
 	}
