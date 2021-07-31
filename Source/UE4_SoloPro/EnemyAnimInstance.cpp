@@ -26,7 +26,7 @@ void UEnemyAnimInstance::UpdateAnimationProperties()
 		if(Pawn)
 		{
 			FVector Speed = Pawn->GetVelocity(); // 물리,연결된 무브먼트컴포넌트가 있을때 속도 반환
-		    FVector LateralSpeed = FVector(Speed.X,Speed.Y,0.f);
+		    FVector LateralSpeed = FVector(Speed.X,Speed.Y,0.f); // 옆쪽으로 이동
 		    MovementSpeed = LateralSpeed.Size();
 
 			Enemy = Cast<AEnemy>(Pawn);
