@@ -52,6 +52,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class UParticleSystem* HitParticles; // 무기로 촥 때렸을때 파티클
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	class USoundCue* HitSound;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

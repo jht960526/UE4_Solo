@@ -166,4 +166,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
 	class UAnimMontage* CombatMontage; // 애니메이션 블루프린트 사용하려고
 
+	UFUNCTION(BlueprintCallable)
+	void PlaySwingSound();
 };

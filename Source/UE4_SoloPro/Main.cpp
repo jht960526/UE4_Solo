@@ -10,6 +10,8 @@
 #include "Weapon.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Animation/AnimInstance.h"
+#include "Sound/SoundCue.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMain::AMain()
@@ -356,6 +358,10 @@ void AMain::Attack()
 		   
 
 	    }
+		//if(EquippedWeapon->SwingSound)
+		//{
+		//	UGameplayStatics::PlaySound2D(this, EquippedWeapon->SwingSound); //바로 실행해 버려서 조금 아쉬움
+		//}
 	}
 	
 }
@@ -366,6 +372,14 @@ void AMain::AttackEnd() // 에디터에서 사용가능
 	if(bLMBDown)
 	{
 		Attack();
+	}
+}
+
+void AMain::PlaySwingSound()
+{
+	if(EquippedWeapon->SwingSound)
+	{
+		UGameplayStatics::PlaySound2D(this, EquippedWeapon->SwingSound);
 	}
 }
 
