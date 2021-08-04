@@ -35,6 +35,12 @@ public:
 	// Sets default values for this character's properties
 	AMain();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	class UParticleSystem* HitParticles; // 무기로 촥 때렸을때 파티클
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	class USoundCue* HitSound;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enums")
 	EMovementStatus MovementStatus;
 
