@@ -12,6 +12,8 @@
 #include "Animation/AnimInstance.h"
 #include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Enemy.h"
 
 // Sets default values
 AMain::AMain()
@@ -70,6 +72,21 @@ AMain::AMain()
 
 	StaminaDrainRate = 25.f; // 초당 줄어드는 스테미나 비율
 	MinSprintStamina = 50.f; // 색이 바뀌는 구간
+
+	InterpSpeed = 15.f;
+	bInterpToEnemy = false;
+}
+
+void AMain::SetInterpToEnemy(bool Interp)
+{
+	bInterpToEnemy = Interp;
+}
+
+FRotator AMain::GetLookAtRotationYaw(FVector Target)
+{
+	FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), Target);
+	FRotator LookAtRotationYaw(0.f, LookAtRotation.Yaw, 0.f);
+	return LookAtRotationYaw;
 }
 
 void AMain::SetMovementStatus(EMovementStatus Status)
@@ -226,6 +243,14 @@ void AMain::Tick(float DeltaTime)
 		break;
 
 	}
+
+	if(bInterpToEnemy && CombatTarget)
+	{
+		FRotator LookAtYaw = GetLookAtRotationYaw(CombatTarget->GetActorLocation()); // 적위치 가져오기
+		FRotator InterpRotation = FMath::RInterpTo(GetActorRotation(), LookAtYaw, DeltaTime, InterpSpeed);
+
+		SetActorRotation(InterpRotation);
+	}
 }
 
 // Called to bind functionality to input
@@ -335,6 +360,7 @@ void AMain::Attack()
 	if(!bAttacking)
 	{
 		bAttacking = true;
+		SetInterpToEnemy(true);
 
 	    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
 	    if(AnimInstance && CombatMontage)
@@ -369,6 +395,7 @@ void AMain::Attack()
 void AMain::AttackEnd() // 에디터에서 사용가능
 {
 	bAttacking = false; // 순서를 바꿔야 하지 않을까?라는 의문
+	SetInterpToEnemy(false);
 	if(bLMBDown)
 	{
 		Attack();
