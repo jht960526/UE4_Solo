@@ -125,6 +125,13 @@ void AMain::DecrementHealth(float Amount)
 	}
 }
 
+float AMain::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser)
+{
+	DecrementHealth(DamageAmount);
+
+	return DamageAmount;
+}
+
 void AMain::IncrementCoins(int32 Amount)
 {
 	Coins += Amount;
@@ -132,7 +139,12 @@ void AMain::IncrementCoins(int32 Amount)
 
 void AMain::Die()
 {
-
+	 UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
+	 if(AnimInstance && CombatMontage)
+	 {
+		 AnimInstance->Montage_Play(CombatMontage, 1.0f);
+		 AnimInstance->Montage_JumpToSection(FName("Death"));
+	 }
 }
 
 // Called when the game starts or when spawned

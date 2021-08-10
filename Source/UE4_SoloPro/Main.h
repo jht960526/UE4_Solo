@@ -124,6 +124,8 @@ public:
 
 	void DecrementHealth(float Amount);
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
+
 	void IncrementCoins(int32 Amount);
 
 	void Die();
@@ -179,6 +181,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Anims")
 	class UAnimMontage* CombatMontage; // 애니메이션 블루프린트 사용하려고

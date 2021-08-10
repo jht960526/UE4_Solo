@@ -13,6 +13,8 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Sound/SoundCue.h"
 #include "Animation/AnimInstance.h"
+#include "TimerManager.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -38,6 +40,13 @@ AEnemy::AEnemy()
 	Health = 75.f;
 	MaxHealth = 100.f;
 	Damage = 10.f;
+
+	AttackMaxTime = 3.5f;
+	AttackMinTime = 0.5f;
+
+	EnemyMovementStatus = EEnemyMovementStatus::EMS_Idle;
+
+	DeathDelay = 3.f;
 }
 
 // Called when the game starts or when spawned
@@ -93,7 +102,7 @@ void AEnemy::AgroSphereOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 
 void AEnemy::AgroSphereOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if(OtherActor)
+	if(OtherActor && Alive())
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		{
@@ -111,7 +120,7 @@ void AEnemy::AgroSphereOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AA
 
 void AEnemy::CombatSphereOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(OtherActor)
+	if(OtherActor && Alive())
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		{
@@ -135,13 +144,18 @@ void AEnemy::CombatSphereOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, 
 		{
 			if(Main)
 			{
-				Main->SetCombatTarget(nullptr);
+				if(Main->CombatTarget == this) 
+				{
+					Main->SetCombatTarget(nullptr); // 전투가 끝나면 더이상 싸우지 않게
+				}
+				
 				bOverlappingCombatSphere = false;
 				if(EnemyMovementStatus != EEnemyMovementStatus::EMS_Attacking)
 				{
 					MoveToTarget(Main);
 					CombatTarget = nullptr;
 				}
+				GetWorldTimerManager().ClearTimer(AttackTimer); // 타이머 초기화
 			}
 		}
 	}
@@ -199,6 +213,11 @@ void AEnemy::CombatOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AAct
 			{
 				UGameplayStatics::PlaySound2D(this, Main->HitSound);
 			}
+			if(DamageTypeClass)
+			{
+				UGameplayStatics::ApplyDamage(Main,Damage, AIController,this,DamageTypeClass);
+				// Main에서 decementDamage함수를 불러서 받은 데미지가 적용
+			}
 		}
 	}
 }
@@ -224,22 +243,26 @@ void AEnemy::DeactivateCollision()
 
 void AEnemy::Attack()
 {
-	if(AIController)
+	if(Alive())
 	{
-		AIController->StopMovement();
-		SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Attacking);
-	}
-	if(!bAttacking)
-	{
+		if(AIController)
+	    {
+		   AIController->StopMovement();
+		   SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Attacking);
+	     }
+	  if(!bAttacking)
+	  {
 		bAttacking = true;
 		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // 에디터에서 애니메이션 가져오기
 		if(AnimInstance)
 		{
-			AnimInstance->Montage_Play(CombatMontage, 1.35f);
+			AnimInstance->Montage_Play(CombatMontage, 1.25f);
 			AnimInstance->Montage_JumpToSection(FName("Attack"),CombatMontage); // 공격상태니까 공격모션으로
 		}
 		
+	  }
 	}
+	
 }
 
 void AEnemy::AttackEnd()
@@ -247,6 +270,60 @@ void AEnemy::AttackEnd()
 	bAttacking = false;
 	if(bOverlappingCombatSphere) // 공격이 끝나더라도 오버랩되어 있으면 계속 공격
 	{
-		Attack();
+		float AttackTime = FMath::FRandRange(AttackMinTime, AttackMaxTime);
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackTime);
 	}
 }
+
+float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if(Health - DamageAmount <= 0.f)
+	{
+		Health -= DamageAmount;
+		Die();
+	}
+	else
+	{
+		Health -= DamageAmount;
+	}
+
+	return DamageAmount;
+}
+
+void AEnemy::Die()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); // 에디터에서 애니메이션 가져오기
+	if(AnimInstance)
+	{
+		AnimInstance->Montage_Play(CombatMontage, 1.25f);
+		AnimInstance->Montage_JumpToSection(FName("Death"),CombatMontage); // 공격상태니까 공격모션으로
+	}
+	SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Dead);
+
+	CombatCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision); //콜리젼 박스 상태 설정
+	AgroSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); //콜리젼 박스 상태 설정
+	CombatSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); //콜리젼 박스 상태 설정
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); //콜리젼 박스 상태 설정
+
+	bAttacking = false;
+}
+
+void AEnemy::DeathEnd()
+{
+	GetMesh()->bPauseAnims = true;
+	GetMesh()->bNoSkeletonUpdate = true;
+
+	GetWorldTimerManager().SetTimer(DeathTimer, this, &AEnemy::Disappear, DeathDelay);
+	// 컨트롤러, 당하게될놈, 어떤거, 시간
+}
+
+bool AEnemy::Alive()
+{
+	return GetEnemyMovementStatus() != EEnemyMovementStatus::EMS_Dead;
+}
+
+void AEnemy::Disappear()
+{
+	Destroy();
+}
+
