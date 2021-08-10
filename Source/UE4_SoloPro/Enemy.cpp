@@ -15,6 +15,7 @@
 #include "Animation/AnimInstance.h"
 #include "TimerManager.h"
 #include "Components/CapsuleComponent.h"
+#include "MainPlayerController.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -90,7 +91,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::AgroSphereOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if(OtherActor)
+	if(OtherActor && Alive())
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		if(Main)
@@ -102,12 +103,21 @@ void AEnemy::AgroSphereOnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
 
 void AEnemy::AgroSphereOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if(OtherActor && Alive())
+	if(OtherActor)
 	{
 		AMain* Main = Cast<AMain>(OtherActor);
 		{
 			if(Main)
 			{
+				if(Main->CombatTarget == this) 
+				{
+					Main->SetCombatTarget(nullptr); // 전투가 끝나면 더이상 싸우지 않게
+				}
+				Main->SetHasCombatTarget(false);
+				if(Main->MainPlayerController)
+				{
+					Main->MainPlayerController->RemoveEnemyHealthBar();
+				}
 				SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Idle);
 				if(AIController)
 				{
@@ -127,6 +137,12 @@ void AEnemy::CombatSphereOnOverlapBegin(UPrimitiveComponent* OverlappedComponent
 			if(Main)
 			{
 				Main->SetCombatTarget(this);
+				Main->SetHasCombatTarget(true);
+				if(Main->MainPlayerController)
+				{
+					Main->MainPlayerController->DisplayEnemyHealthBar();
+				}
+
 				CombatTarget = Main;
 				bOverlappingCombatSphere = true;
 				//SetEnemyMovementStatus(EEnemyMovementStatus::EMS_Attacking); 공격함수에 있으니까
@@ -144,10 +160,6 @@ void AEnemy::CombatSphereOnOverlapEnd(UPrimitiveComponent* OverlappedComponent, 
 		{
 			if(Main)
 			{
-				if(Main->CombatTarget == this) 
-				{
-					Main->SetCombatTarget(nullptr); // 전투가 끝나면 더이상 싸우지 않게
-				}
 				
 				bOverlappingCombatSphere = false;
 				if(EnemyMovementStatus != EEnemyMovementStatus::EMS_Attacking)
