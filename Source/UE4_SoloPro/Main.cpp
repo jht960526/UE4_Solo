@@ -142,12 +142,22 @@ void AMain::IncrementCoins(int32 Amount)
 
 void AMain::Die()
 {
+	if(MovementStatus == EMovementStatus::EMS_Dead) return;
 	 UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance(); //애니메이션 가져오기
 	 if(AnimInstance && CombatMontage)
 	 {
 		 AnimInstance->Montage_Play(CombatMontage, 1.0f);
 		 AnimInstance->Montage_JumpToSection(FName("Death"));
 	 }
+	 SetMovementStatus(EMovementStatus::EMS_Dead);
+}
+
+void AMain::Jump()
+{
+	if(MovementStatus != EMovementStatus::EMS_Dead)
+	{
+		ACharacter::Jump();
+	}
 }
 
 // Called when the game starts or when spawned
@@ -163,6 +173,8 @@ void AMain::BeginPlay()
 void AMain::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(MovementStatus == EMovementStatus::EMS_Dead) return;
 
 	float DeltaStamina = StaminaDrainRate * DeltaTime;
 
@@ -286,7 +298,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 
 	// 캐릭터에서 가져온 함수 사용
-	PlayerInputComponent->BindAction("Jump",IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump",IE_Pressed, this, &AMain::Jump);
 	PlayerInputComponent->BindAction("Jump",IE_Released, this, &ACharacter::StopJumping);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AMain::ShiftKeyDown);
@@ -310,7 +322,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMain::MoveForward(float Value)
 {
-	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking))
+	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking) && (MovementStatus != EMovementStatus::EMS_Dead))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -326,7 +338,7 @@ void AMain::MoveForward(float Value)
 
 void AMain::MoveRight(float Value)
 {
-	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking))
+	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking) && (MovementStatus != EMovementStatus::EMS_Dead))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -350,6 +362,8 @@ void AMain::LookUpAtRate(float Rate)
 void AMain::LMBDown()
 {
 	bLMBDown = true;
+
+	if(MovementStatus == EMovementStatus::EMS_Dead) return;
 
 	if(ActiveOverlappingItem)
 	{
@@ -383,7 +397,7 @@ void AMain::SetEquippedWeapon(AWeapon* WeaponToSet)
 
 void AMain::Attack()
 {
-	if(!bAttacking)
+	if(!bAttacking && (MovementStatus != EMovementStatus::EMS_Dead))
 	{
 		bAttacking = true;
 		SetInterpToEnemy(true);
@@ -434,5 +448,11 @@ void AMain::PlaySwingSound()
 	{
 		UGameplayStatics::PlaySound2D(this, EquippedWeapon->SwingSound);
 	}
+}
+
+void AMain::DeathEnd()
+{
+	GetMesh()->bPauseAnims = true;
+	GetMesh()->bNoSkeletonUpdate = true;
 }
 
