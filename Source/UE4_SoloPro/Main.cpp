@@ -130,7 +130,23 @@ void AMain::DecrementHealth(float Amount)
 
 float AMain::TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser)
 {
-	DecrementHealth(DamageAmount);
+	if(Health - DamageAmount <= 0.f)
+	{
+		Health -= DamageAmount; // healthbar update
+		Die();
+		if(DamageCauser)
+		{
+			AEnemy* Enemy = Cast<AEnemy>(DamageCauser);
+			if(Enemy)
+			{
+				Enemy->bHasValidTarget = false;
+			}
+		}
+	}
+	else
+	{
+		Health -= DamageAmount;
+	}
 
 	return DamageAmount;
 }
