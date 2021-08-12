@@ -78,6 +78,9 @@ AMain::AMain()
 	bInterpToEnemy = false;
 
 	bHasCombatTarget = false;
+
+	bMovingForward = false;
+	bMovingRight = false;
 }
 
 void AMain::SetInterpToEnemy(bool Interp)
@@ -210,7 +213,15 @@ void AMain::Tick(float DeltaTime)
 			{
 				Stamina -= DeltaStamina; // 줄어든 값을 적용하기 위함
 			}
-			SetMovementStatus(EMovementStatus::EMS_Sprinting); // 키가 눌렸으니까 달리기 상태
+			if(bMovingForward || bMovingRight)
+			{
+				SetMovementStatus(EMovementStatus::EMS_Sprinting); // 키가 눌렸으니까 달리기 상태
+			}
+			else
+			{
+				SetMovementStatus(EMovementStatus::EMS_Normal); // 움직임없이 shift누르면 반응x
+			}
+			
 		}
 		else // Shift key up
 		{
@@ -239,7 +250,14 @@ void AMain::Tick(float DeltaTime)
 			else // 그게 아닐때는 계속 달리기
 			{
 				Stamina -= DeltaStamina;
-				SetMovementStatus(EMovementStatus::EMS_Sprinting);
+				if(bMovingForward || bMovingRight)
+			    {
+				    SetMovementStatus(EMovementStatus::EMS_Sprinting); // 키가 눌렸으니까 달리기 상태
+			    }
+			    else
+			    {
+				    SetMovementStatus(EMovementStatus::EMS_Normal); // 움직임없이 shift누르면 반응x
+			    }
 			}
 		}
 
@@ -338,6 +356,7 @@ void AMain::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMain::MoveForward(float Value)
 {
+	bMovingForward = false; // 안해주면 계속 true상태이기 때문
 	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking) && (MovementStatus != EMovementStatus::EMS_Dead))
 	{
 		// find out which way is forward
@@ -349,11 +368,14 @@ void AMain::MoveForward(float Value)
 		// 회전에 따라 변경되는 축들
 		// Get UnitAxis: 회전방향에 대한 절대 축 얻기
 		AddMovementInput(Direction,Value);
+
+		bMovingForward = true;
 	}
 }
 
 void AMain::MoveRight(float Value)
 {
+	bMovingRight = false;
 	if((Controller != nullptr) && (Value != 0.0f) && (!bAttacking) && (MovementStatus != EMovementStatus::EMS_Dead))
 	{
 		// find out which way is forward
@@ -362,6 +384,8 @@ void AMain::MoveRight(float Value)
 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		AddMovementInput(Direction,Value);
+
+		bMovingRight = true;
 	}
 }
 
