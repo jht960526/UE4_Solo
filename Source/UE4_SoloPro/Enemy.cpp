@@ -32,7 +32,8 @@ AEnemy::AEnemy()
 	CombatSphere->InitSphereRadius(75.f);
 
 	CombatCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CombatCollision"));
-	CombatCollision->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale, FName("EnemySocket"));
+	CombatCollision->SetupAttachment(GetMesh(), FName("EnemySocket"));
+	//CombatCollision->AttachToComponent(GetMesh(),FAttachmentTransformRules::SnapToTargetIncludingScale, FName("EnemySocket"));
 	// 에디터상에 스켈레탈 메시에 대한 Parent Socket을 지정하지 못하는 문제해결해주기 위해서
 
 
